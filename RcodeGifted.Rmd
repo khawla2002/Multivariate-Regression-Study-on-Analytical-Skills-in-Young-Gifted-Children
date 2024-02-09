@@ -1,0 +1,92 @@
+---
+title: "Mutivariate Regression Study on Analytical Skills of Young Gifted Children"
+output: html_notebook
+---
+
+```{r}
+#Reading and viewing the data
+library(readr)
+dataset <- read_csv("C:/Users/khawl/Desktop/Gifted.csv")
+View(dataset)
+```
+```{r}
+#Clean data:we are filtering our data by removing the independent variables not considered in this study
+install.packages("dplyr") #I installed a necessary package to use the function select()
+library(dplyr)
+dataset_filtered <- select(dataset, -c(fatheriq, speak, count,cartoons))
+View(dataset_filtered)
+```
+
+
+```{r}
+#now before starting data vizualisation i am renaming some variable to make my code look clearer
+x <-dataset_filtered$motheriq
+y <-dataset_filtered$edutv
+z <-dataset_filtered$score
+t <-dataset_filtered$read
+```
+
+
+```{r}
+#Now i will start plotting
+#I installed a necessary package for the visualization of this plot
+install.packages("scatterplot3d")
+library(scatterplot3d)
+scatterplot3d(x, y, z, angle = 20, xlab = "Mother's IQ" , ylab ="edutv (hrs/week)" , zlab="IQ score", pch
+= 16, color = "steelblue")
+```
+
+
+```{r}
+#Some other interesting plots
+plot(x, z, xlab="Mother's IQ" , ylab="kid's IQ score")
+abline(lm(z ~ x, data = dataset_filtered), col = "blue") #adding a blue line to make things clearer
+plot(y, z, xlab="edutv(hrs/week)" , ylab="kid's IQ score")
+abline(lm(z ~ y, data = dataset_filtered), col = "blue")
+plot(t,z, xlab = "read(hrs/week)" , ylab = "IQ score")
+abline(lm(z ~ t, data = dataset), col = "blue")
+```
+
+
+```{r}
+# Multivariate linear regression
+# Multivariate Linear regression assumptions tests:
+#code for residuals vs fitted plot
+model <- lm(z~x+y+t, data=dataset_filtered)
+res <- resid(model)
+plot(fitted(model), res, xlab="predicted values")
+abline(0,0) #adding the line
+#code for a normal QQ plot
+qqnorm(res)
+qqline(res) #adding the line
+# code for density plot of residuals
+plot(density(res), xlab = "residuals")
+# code for multivariate linear regression:
+fit <- lm(z ~ x+ y + t, data=dataset_filtered)
+summary(fit)
+```
+
+
+```{r}
+# 2 sample Unpaired t-test
+#first i make my subtables to create our two categories
+data1 <- dataset_filtered[t <= 2.1, ]
+View(data1)
+data2 <- dataset_filtered[t > 2.1, ]
+View(data2)
+#code for the preliminary tests for the t-test assumptions
+#shapiro test for each categorie to test the normality
+with(data1, shapiro.test(score))
+with(data2, shapiro.test(score))
+#F-test to test if both categories have a common variance
+var.test(data1$score,data2$score)
+#t-test code
+res <- t.test(data1$score, data2$score, var.equal = TRUE)
+res
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
